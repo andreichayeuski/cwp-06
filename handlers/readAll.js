@@ -85,7 +85,7 @@ module.exports.readAll = function(req, res, payload, cb) {
 		}
 	}
 	let resultArticles = [];
-	console.log(articles.length - Math.floor(articles.length / viewLimit) * viewPages);
+	console.log(Math.floor(1.7));
 	for (let i = viewLimit * (viewPages - 1); i < viewLimit * viewPages; i++)
 	{
 
@@ -101,7 +101,12 @@ module.exports.readAll = function(req, res, payload, cb) {
 		}
 	}
 	// end page-limit validation
-
-	log.log(req.url, JSON.stringify(resultArticles));
-	cb(null, resultArticles);
+	let answer = { "items" : resultArticles,
+		"page": viewPages,
+		"pages": articles.length % viewLimit > 0 ? Math.floor(articles.length / viewLimit) + 1 : articles.length / viewLimit,
+		"count": resultArticles.length,
+		"limit": viewLimit
+	};
+	log.log(req.url, JSON.stringify(answer));
+	cb(null, answer);
 };
