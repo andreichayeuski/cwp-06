@@ -4,9 +4,15 @@ const defaultSortValues = {
 	"sortField": "date",
 	"sortOrder": "desc"
 };
-
 let compareField = defaultSortValues.sortField;
 let compareOrder = defaultSortValues.sortOrder;
+
+const defaultViewValues = {
+	"page": "1",
+	"limit": "10"
+};
+let viewPages = defaultViewValues.page;
+let viewLimit = defaultViewValues.limit;
 
 function compareCustom(a, b) {
 	if (a[compareField] > b[compareField])
@@ -19,19 +25,20 @@ function compareCustom(a, b) {
 	}
 }
 
-let isValid = false;
+let isValidOrderField = false;
 
 module.exports.readAll = function(req, res, payload, cb) {
+	// begin sort validation
 	if (payload.sortField !== undefined)
 	{
 		articles.forEach((element) =>
 		{
 			if (element[payload.sortField] !== undefined)
 			{
-				isValid = true;
+				isValidOrderField = true;
 			}
 		});
-		if (isValid)
+		if (isValidOrderField)
 		{
 			compareField = payload.sortField;
 		}
@@ -50,9 +57,51 @@ module.exports.readAll = function(req, res, payload, cb) {
 		{
 			log.log(req.url, JSON.stringify("invalid order field name"));
 		}
+	}	// end sort validation
+	articles.sort(compareCustom);
+
+	// begin page-limit validation
+	if (payload.page !== undefined)
+	{
+		if (parseInt(payload.page, 10) > 0)
+		{
+			viewPages = payload.page;
+		}
+		else
+		{
+			log.log(req.url, JSON.stringify("invalid page parameter"));
+		}
 	}
 
-	articles.sort(compareCustom);
-	log.log(req.url, JSON.stringify(payload));
-	cb(null, articles);
+	if (payload.limit !== undefined)
+	{
+		if (parseInt(payload.limit, 10) > 0)
+		{
+			viewLimit = payload.limit;
+		}
+		else
+		{
+			log.log(req.url, JSON.stringify("invalid page limit parameter"));
+		}
+	}
+	let resultArticles = [];
+	console.log(articles.length - Math.floor(articles.length / viewLimit) * viewPages);
+	for (let i = viewLimit * (viewPages - 1); i < viewLimit * viewPages; i++)
+	{
+
+		console.log(i + "     " + articles[i]);
+		if (articles[i] !== undefined)
+		{
+			resultArticles.push(articles[i]);
+		}
+		else
+		{
+			log.log(req.url, JSON.stringify("nothing to show"));
+			break;
+		}
+	}
+	// end page-limit validation
+
+	log.log(req.url, JSON.stringify(resultArticles));
+	cb(null, resultArticles);
 };
