@@ -6,6 +6,7 @@ const createArticle = require("./handlers/articles/createArticle.js");
 const deleteArticle = require("./handlers/articles/deleteArticle.js");
 const createComment = require("./handlers/comments/createComment");
 const deleteComment = require("./handlers/comments/deleteComment");
+const logs = require("./handlers/getLogs.js");
 const hostname = "localhost";
 const port = 3000;
 
@@ -17,7 +18,8 @@ const handlers = {
 	'/api/articles/create': createArticle.createArticle,
 	'/api/articles/delete': deleteArticle.deleteArticle,
 	'/api/comments/create': createComment.createComment,
-	'/api/comments/delete': deleteComment.deleteComment
+	'/api/comments/delete': deleteComment.deleteComment,
+	'/api/logs': logs.getLogs
 };
 
 const server = http.createServer((req, res) => {
