@@ -1,18 +1,17 @@
 const log = require("../log.js");
 let articles = require("../articles.json");
-const defaultSortValues = {
+const defaultValues = {
 	"sortField": "date",
-	"sortOrder": "desc"
-};
-let compareField = defaultSortValues.sortField;
-let compareOrder = defaultSortValues.sortOrder;
-
-const defaultViewValues = {
+	"sortOrder": "desc",
 	"page": "1",
-	"limit": "10"
+	"limit": "10",
+	"includeDeps": false
 };
-let viewPages = defaultViewValues.page;
-let viewLimit = defaultViewValues.limit;
+let compareField = defaultValues.sortField;
+let compareOrder = defaultValues.sortOrder;
+let viewPages = defaultValues.page;
+let viewLimit = defaultValues.limit;
+let includeDeps = defaultValues.includeDeps;
 
 function compareCustom(a, b) {
 	if (a[compareField] > b[compareField])
@@ -57,7 +56,8 @@ module.exports.readAll = function(req, res, payload, cb) {
 		{
 			log.log(req.url, JSON.stringify("invalid order field name"));
 		}
-	}	// end sort validation
+	}
+	// end sort validation
 	articles.sort(compareCustom);
 
 	// begin page-limit validation
@@ -84,12 +84,10 @@ module.exports.readAll = function(req, res, payload, cb) {
 			log.log(req.url, JSON.stringify("invalid page limit parameter"));
 		}
 	}
+
 	let resultArticles = [];
-	console.log(Math.floor(1.7));
 	for (let i = viewLimit * (viewPages - 1); i < viewLimit * viewPages; i++)
 	{
-
-		console.log(i + "     " + articles[i]);
 		if (articles[i] !== undefined)
 		{
 			resultArticles.push(articles[i]);
@@ -101,6 +99,21 @@ module.exports.readAll = function(req, res, payload, cb) {
 		}
 	}
 	// end page-limit validation
+
+	// begin with/without comments
+	if (payload.includeDeps === true || payload.includeDeps === false)
+	{
+		includeDeps = payload.includeDeps;
+	}
+	if (!includeDeps)
+	{
+		resultArticles.forEach((element) =>
+		{
+			element.comments = [];
+		});
+	}
+	// end with/without comments
+
 	let answer = { "items" : resultArticles,
 		"page": viewPages,
 		"pages": articles.length % viewLimit > 0 ? Math.floor(articles.length / viewLimit) + 1 : articles.length / viewLimit,
